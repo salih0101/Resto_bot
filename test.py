@@ -1,3 +1,5 @@
+import asyncio
+
 from settings import *
 from about_company import about, contacts
 import csv
@@ -13,8 +15,8 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 @dp.message_handler(commands=['start'], state='*')
 async def start_message(message):
 
-    start_txt = f'Добро пожаловать {message.from_user.first_name} \n' \
-                f'Мы рады предложить вам широкий ассортимент высококачественных и стильных текстильных изделий , ' \
+    start_txt = f'Добро пожаловать   {message.from_user.first_name} !\n\n' \
+                f'Мы рады предложить вам широкий ассортимент высококачественных и стильных текстильных изделий, \n' \
                 f'которые сделают ваше заведение еще более привлекательным и профессиональным.'
 
     start_reg = f'Введите ваше имя: '
@@ -80,7 +82,7 @@ async def broadcast_command(message, state=states.Broadcast.broadcast_message):
     for user in users:
         user_id = user[0]
         await bot.send_message(chat_id=user_id, text=message.text[11:])
-        # Replace message.text[11:] with command_args[1] if you prefer using split
+
 
     await message.reply('Сообщение успешно отправлено всем пользователям.')
     await state.finish()
@@ -206,7 +208,7 @@ async def get_number(message: types.Message, state: FSMContext):
 
     await state.update_data(number=user_answer)
     await message.answer(f'Пожалуйста, продолжайте оформление заказа, '
-                         f'указывая необходимые товары для вашего ресторана\n\n. '
+                         f'указывая необходимые товары для вашего ресторана. \n\n'
                          f'Мы готовы предложить вам наши лучшие цены, продукты и обеспечить ваше заведение высококачественным текстилем, '
                          f'который подчеркнет ваш стиль и профессионализм.', reply_markup=btns.main_menu())
 
@@ -221,8 +223,8 @@ async def get_number(message: types.Message, state: FSMContext):
 
     await state.finish()
 
-
-@dp.message_handler(state=GetProduct.getting_pr_name, content_types=['text'])
+# Для 180гр
+@dp.message_handler(state=GetProduct.getting_pr_name180, content_types=['text'])
 async def choose_count(message):
     user_answer = message.text
     user_id = message.from_user.id
@@ -235,7 +237,7 @@ async def choose_count(message):
     if user_answer == 'Назад◀️':
         await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
         await dp.current_state(user=user_id).finish()
-        
+
         await dp.current_state(user=user_id).finish()
 
     elif user_answer in actual_products:
@@ -245,16 +247,16 @@ async def choose_count(message):
                              caption=f'{product_info[0]}\n\nЦена: {product_info[2]} сум\n\n'
                                      f'Описание: {product_info[3]}\n\n'
                                      f'@ferrafastudio_bot\n\n',
-                             reply_markup=btns.colour_kb())
+                             reply_markup=btns.colour180_kb())
         await message.answer('Выберите цвет')
 
         await dp.current_state(user=user_id).update_data(user_product=message.text, price=product_info[2])
 
-        await states.GetProduct.getting_pr_colour.set()
+        await states.GetProduct.getting_pr_colour180.set()
 
 
-@dp.message_handler(state=GetProduct.getting_pr_colour)
-async def choose_colour(message, state=GetProduct.getting_pr_colour):
+@dp.message_handler(state=GetProduct.getting_pr_colour180)
+async def choose_colour(message, state=GetProduct.getting_pr_colour180):
     user_answer = message.text
     colour = message.text
 
@@ -262,14 +264,106 @@ async def choose_colour(message, state=GetProduct.getting_pr_colour):
         await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
         await dp.current_state(user=message.from_user.id).finish()
 
-    elif user_answer == '⚫️Черный' or user_answer == '⚪️Белый':
+    elif user_answer == 'Чeрный' or user_answer == 'Бeлый':
+        await state.update_data(colour=colour)
+        await message.answer('Выберите количество', reply_markup=btns.product_count())
+        await state.set_state(states.GetProduct.getting_pr_count)
+
+# Для 240гр
+@dp.message_handler(state=GetProduct.getting_pr_name240, content_types=['text'])
+async def choose_count(message):
+    user_answer = message.text
+    user_id = message.from_user.id
+
+    user_data = await dp.current_state(user=user_id).get_data()
+    category_id = user_data.get('category_id')
+
+    actual_products = [i[0] for i in database.get_name_product(category_id)]
+
+    if user_answer == 'Назад◀️':
+        await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
+        await dp.current_state(user=user_id).finish()
+
+        await dp.current_state(user=user_id).finish()
+
+    elif user_answer in actual_products:
+
+        product_info = database.get_all_info_product(user_answer)
+        await bot.send_photo(user_id, photo=product_info[4],
+                              caption=f'{product_info[0]}\n\nЦена: {product_info[2]} сум\n\n'
+                                      f'Описание: {product_info[3]}\n\n'
+                                      f'@ferrafastudio_bot\n\n',
+                              reply_markup=btns.colour240_kb())
+        await message.answer('Выберите цвет')
+
+        await dp.current_state(user=user_id).update_data(user_product=message.text, price=product_info[2])
+
+        await states.GetProduct.getting_pr_colour240.set()
+
+
+@dp.message_handler(state=GetProduct.getting_pr_colour240)
+async def choose_colour(message, state=GetProduct.getting_pr_colour180):
+    user_answer = message.text
+    colour = message.text
+
+    if user_answer == 'Назад◀️':
+        await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
+        await dp.current_state(user=message.from_user.id).finish()
+
+    elif user_answer == 'Горчичный' or user_answer == 'Серый' or user_answer == 'Хаки':
         await state.update_data(colour=colour)
         await message.answer('Выберите количество', reply_markup=btns.product_count())
         await state.set_state(states.GetProduct.getting_pr_count)
 
 
+# Для 300гр
+@dp.message_handler(state=GetProduct.getting_pr_name300, content_types=['text'])
+async def choose_count(message):
+    user_answer = message.text
+    user_id = message.from_user.id
+
+    user_data = await dp.current_state(user=user_id).get_data()
+    category_id = user_data.get('category_id')
+
+    actual_products = [i[0] for i in database.get_name_product(category_id)]
+
+    if user_answer == 'Назад◀️':
+        await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
+        await dp.current_state(user=user_id).finish()
+
+        await dp.current_state(user=user_id).finish()
+
+    elif user_answer in actual_products:
+
+        product_info = database.get_all_info_product(user_answer)
+        await bot.send_photo(user_id, photo=product_info[4],
+                             caption=f'{product_info[0]}\n\nЦена: {product_info[2]} сум\n\n'
+                                     f'Описание: {product_info[3]}\n\n'
+                                     f'@ferrafastudio_bot\n\n',
+                             reply_markup=btns.colour300_kb())
+        await message.answer('Выберите цвет')
+
+        await dp.current_state(user=user_id).update_data(user_product=message.text, price=product_info[2])
+
+        await states.GetProduct.getting_pr_colour300.set()
+
+
+@dp.message_handler(state=GetProduct.getting_pr_colour300)
+async def choose_colour(message, state=GetProduct.getting_pr_colour180):
+    user_answer = message.text
+    colour = message.text
+
+    if user_answer == 'Назад◀️':
+        await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
+        await dp.current_state(user=message.from_user.id).finish()
+
+    elif user_answer == 'Белый':
+        await state.update_data(colour=colour)
+        await message.answer('Выберите количество', reply_markup=btns.product_count())
+        await state.set_state(states.GetProduct.getting_pr_count)
+
 @dp.message_handler(state=GetProduct.getting_pr_count)
-async def text_message3(message, state=GetProduct.getting_pr_count):
+async def get_count(message, state=GetProduct.getting_pr_count):
     product_count = message.text
     user_data = await state.get_data()
     user_product = user_data.get('user_product')
@@ -283,20 +377,19 @@ async def text_message3(message, state=GetProduct.getting_pr_count):
         await message.answer('Товар добавлен в корзину✅\n\nВыберите продукт🔽', reply_markup=btns.catalog_folder())
         await state.finish()
 
-    # elif message.text != 'Назад◀️':
-    #     await message.answer('Выберите количество используя кнопки🔽', reply_markup=btns.product_count())
-
     else:
         await message.answer('Выберите товар из списка🔽', reply_markup=btns.count_kb(category_id))
-        await states.GetProduct.getting_pr_name.set()
-
+        # await states.GetProduct.getting_pr_name.set()
+        await state.finish()
 
 @dp.message_handler(state=Cart.waiting_for_product)
 async def cart_function(message, state=Cart.waiting_for_product):
     user_answer = message.text
     user_id = message.from_user.id
+    photo_path = 'Photo/payme.png'
 
     if user_answer == 'Назад◀️':
+
         await message.answer('❗️Вы вернулись в Главное меню❗️\n\nВыберите раздел🔽', reply_markup=btns.main_menu())
         await dp.current_state(user=message.from_user.id).finish()
 
@@ -304,6 +397,11 @@ async def cart_function(message, state=Cart.waiting_for_product):
 
         database.delete_from_cart(user_id)
         await message.answer('Корзина очищена✅\n\n❗️❗️Нажмите кнопку Назад❗️❗️')
+
+    elif user_answer == 'Назадд':
+
+        await message.answer('❗️Вы вернулись в Главное меню❗️\n\nВыберите раздел🔽', reply_markup=btns.main_menu())
+        await dp.current_state(user=message.from_user.id).finish()
 
     if user_answer == 'Оформить заказ✅':
 
@@ -315,13 +413,18 @@ async def cart_function(message, state=Cart.waiting_for_product):
             admin_message = 'Новый заказ✅✅:\n\n'
             total_price = 0
 
-            for i in user_cart:
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                total_price += i[3]
+            for item in user_cart:
+                result_answer += f'- {item[1]}: {item[5]} {item[-2]} шт = {item[3]:,.0f}сум\n\n'.replace(",", ".")
+                total_price += item[3]
 
-            result_answer += f' \nИтог: {total_price:}сум'
-        await message.answer('Раздел оформления заказа🔽', reply_markup=btns.confirmation_kb())
+            formatted_price = f"{total_price:,.0f}".replace(",", ".")
+            result_answer += f'\nИтог: {formatted_price}сум'
+
+        await message.answer('️❗️❗После оплаты нажмите в Телеграм боте на кнопку "Подтвердить"️❗️❗', reply_markup=btns.confirmation_kb())
+        await asyncio.sleep(0.5)
+        await message.answer('Подождите... Загружается')
+        await asyncio.sleep(1)
+        await bot.send_photo(chat_id=user_id, photo=open(photo_path, 'rb'), caption='Раздел оформления заказа🔽', reply_markup=btns.payme_kb())
 
     elif user_answer == 'Подтвердить':
 
@@ -334,13 +437,13 @@ async def cart_function(message, state=Cart.waiting_for_product):
             admin_message = f'Новый заказ № {order_id}:\n\n'
             total_price = 0
 
-            for i in user_cart:
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                total_price += i[3]
+            for item in user_cart:
+                result_answer += f'- {item[1]}: {item[5]} {item[-2]} шт = {item[3]:,.0f}сум\n\n'.replace(",", ".")
+                total_price += item[3]
 
-            result_answer += f' \nИтог: {total_price:}сум\n\n'
-            admin_message += f' Номер телефона: {i[2]}\n\nИтог: {total_price:}сум\n\n'
+            formatted_price = f"{total_price:,.0f}".replace(",", ".")
+            result_answer += f'\nИтог: {formatted_price}сум\n\n'
+            admin_message += f' Номер телефона: {item[2]}\n\nИтог: {formatted_price:}сум\n\n'
 
             delivery_date = datetime.now() + timedelta(days=21)
             delivery_date1 = datetime.now() + timedelta(days=7)
@@ -365,26 +468,24 @@ async def main_menu(message):
     user_id = message.from_user.id
 
     if user_answer == '🛒Корзина':
-
-        user_cart = database.get_user_cart(message.from_user.id)
+        user_cart = database.get_user_cart(user_id)
 
         if user_cart:
-
             result_answer = 'Ваша корзина🛒:\n\n'
             total_price = 0
 
-            for i in user_cart:
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                total_price += i[3]
+            for item in user_cart:
+                result_answer += f'- {item[1]}: {item[5]} {item[-2]} шт = {item[3]:,.0f}сум\n\n'.replace(",", ".")
+                total_price += item[3]
 
-            result_answer += f' \nИтог: {total_price}'
+            formatted_price = f"{total_price:,.0f}".replace(",", ".")
+            result_answer += f'\nИтог: {formatted_price}сум'
+
             await message.answer(result_answer, reply_markup=btns.cart_kb())
             await Cart.waiting_for_product.set()
-
         else:
             await message.answer('Ваша корзина пустая🛒\n\n'
                                  'Для выбора продукта нажмите кнопку ❗️Каталог❗️')
-
 
     if user_answer == '📦Каталог':
         await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
@@ -396,29 +497,33 @@ async def main_menu(message):
     elif user_answer == 'Назад':
         await message.answer('Выберите раздел🔽', reply_markup=btns.catalog_folder())
         await dp.current_state(user=user_id).finish()
-        
+
     elif user_answer == 'Салфетки':
         await message.answer('Выберите категорию🔽', reply_markup=btns.salfetki_kb())
 
-    elif user_answer == 'Категория 1':
+    elif user_answer == 'Салфетка "180гр"':
         await dp.current_state(user=user_id).update_data(category_id=11)
         await message.answer('Выберите продукт🔽', reply_markup=btns.spray_kb())
-        await states.GetProduct.getting_pr_name.set()
+        await states.GetProduct.getting_pr_name180.set()
 
-    elif user_answer == 'Категория 2':
+    elif user_answer == 'Салфетка "240гр"':
         await dp.current_state(user=user_id).update_data(category_id=22)
         await message.answer('Выберите продукт🔽', reply_markup=btns.tablets_kb())
-        await states.GetProduct.getting_pr_name.set()
+        await states.GetProduct.getting_pr_name240.set()
 
-    elif user_answer == '':
+    elif user_answer == 'Салфетка "300гр"':
         await dp.current_state(user=user_id).update_data(category_id=33)
         await message.answer('Выберите продукт🔽', reply_markup=btns.syrup_kb())
-        await states.GetProduct.getting_pr_name.set()
+        await states.GetProduct.getting_pr_name300.set()
+
+    elif user_answer == 'Плейсматы':
+        await message.answer('Инфо текст дя плейсматов...\n\n\n'
+                             'для заказа нажмите кнопку ниже', reply_markup=btns.send_admin_kb())
 
     elif user_answer == 'Фартуки':
-        await dp.current_state(user=user_id).update_data(category_id=44)
-        await message.answer('Выберите продукт🔽', reply_markup=btns.pastes_kb())
-        await states.GetProduct.getting_pr_name.set()
+        await message.answer('Инфо текст для фартука... \n\n\n'
+                             'для заказа нажмите кнопку ниже', reply_markup=btns.send_admin_kb())
+
 
     elif user_answer == 'Назад◀️':
         await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
@@ -434,70 +539,7 @@ async def main_menu(message):
     elif user_answer == '☎️Обратная связь':
         await message.answer(contacts)
 
-    elif user_answer == '📄Список заказов':
-
-        user_cart = database.get_user_cart(message.from_user.id)
-
-        if user_cart:
-
-            result_answer = 'Ваш заказ✅:\n\n'
-            admin_message = 'Новый заказ✅✅:\n\n'
-            total_price = 0
-
-            for i in user_cart:
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                total_price += i[3]
-
-            result_answer += f' \nИтог: {total_price:}сум'
-            admin_message += f' Номер телефона: {i[2]}\n\nИтог: {total_price:}сум'
-
-            await message.answer(result_answer, reply_markup=btns.order_kb())
-
-            await Order.waiting_accept.set()
-
-        else:
-            await message.answer('Ваша корзина пустая🛒\n\n'
-                                 'Для выбора продукта нажмите кнопку ❗️Каталог❗️')
-
     logging.info(message.text)
-
-
-@dp.message_handler(state=Order.waiting_accept)
-async def accept_order(message):
-    user_answer = message.text
-    user_id = message.from_user.id
-
-    if user_answer == 'Назад◀️':
-        await message.answer('❗️Вы вернулись в Главное меню ActiveBee❗️\n\nВыберите раздел🔽', reply_markup=btns.main_menu())
-        await dp.current_state(user=message.from_user.id).finish()
-
-    elif user_answer == 'Оформить заказ':
-
-        user_cart = database.get_user_cart(message.from_user.id)
-
-        if user_cart:
-
-            result_answer = 'Ваш заказ✅🔽:\n\n'
-            admin_message = 'Новый заказ✅✅:\n\n'
-            total_price = 0
-
-            for i in user_cart:
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                result_answer += f'- {i[1]}: {i[5]} {i[-2]} шт = {i[3]}сум\n\n'
-                total_price += i[3]
-
-            result_answer += f' \nИтог: {total_price:}сум'
-            admin_message += f'Номер телефона: {i[2]}\n\nИтог: {total_price:}сум'
-
-            await message.answer(result_answer, reply_markup=btns.main_menu())
-            await message.answer('Успешно оформлен✅\n\n')
-            await bot.send_message(5928000362, admin_message)
-            await dp.current_state(user=message.from_user.id).finish()
-            database.delete_from_cart(user_id)
-
-
-
 
 
 @dp.message_handler(state=Settings.set_setting, content_types=['text'])

@@ -31,26 +31,6 @@ def get_users():
     return users
 
 
-def search_product(name):
-
-    connection = sqlite3.connect('restodata.db')
-    sql = connection.cursor()
-
-    sql.execute("SELECT * FROM products WHERE products.name LIKE ?", ('%' + name + '%',))
-    rows = sql.fetchall()
-
-    return rows
-
-
-def delete_user():
-    connection = sqlite3.connect('restodata.db')
-    sql = connection.cursor()
-
-    sql.execute('DELETE FROM users;')
-
-    connection.commit()
-
-
 def get_all_info_product(current_product):
     connection = sqlite3.connect('restodata.db')
     sql = connection.cursor()
@@ -92,13 +72,6 @@ def pastes_product():
     connection = sqlite3.connect('restodata.db')
     sql = connection.cursor()
     product_id = sql.execute('SELECT * FROM products WHERE id=44;')
-    return product_id.fetchall()
-
-
-def other_product():
-    connection = sqlite3.connect('restodata.db')
-    sql = connection.cursor()
-    product_id = sql.execute('SELECT * FROM products WHERE id=55;')
     return product_id.fetchall()
 
 

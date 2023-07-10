@@ -13,7 +13,7 @@ def admin_kb():
 def main_menu():
     kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     kb.add('📦Каталог')
-    kb.add('📄Список заказов', '🛒Корзина')
+    kb.add('🛒Корзина')
     kb.add('☎️Обратная связь')
     kb.add('О нас', '👤Профиль')
 
@@ -22,8 +22,8 @@ def main_menu():
 
 def catalog_folder():
     kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    kb.add('Фартуки')
     kb.add('Салфетки')
+    kb.add('Плейсматы', 'Фартуки')
     kb.add('🛒Корзина', 'Назад🔙')
 
     return kb
@@ -31,7 +31,8 @@ def catalog_folder():
 
 def salfetki_kb():
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add('Категория 1', 'Категория 2')
+    kb.add('Салфетка "180гр"')
+    kb.add('Салфетка "240гр"', 'Салфетка "300гр"')
     kb.add('Назад')
 
     return kb
@@ -46,9 +47,25 @@ def cart_kb():
     return kb
 
 
-def colour_kb():
+def colour180_kb():
     kb = ReplyKeyboardMarkup(resize_keyboard=True, input_field_placeholder="Выберите цвет модели")
-    kb.add('⚫️Черный', '⚪️Белый')
+    kb.add('Чeрный', 'Бeлый')
+    kb.add('Назад◀️')
+
+    return kb
+
+def colour240_kb():
+    kb = ReplyKeyboardMarkup(resize_keyboard=True, input_field_placeholder="Выберите цвет модели")
+    kb.add('Горчичный')
+    kb.add('Серый', 'Хаки')
+    kb.add('Назад◀️')
+
+    return kb
+
+
+def colour300_kb():
+    kb = ReplyKeyboardMarkup(resize_keyboard=True, input_field_placeholder="Выберите цвет модели")
+    kb.add('Белый')
     kb.add('Назад◀️')
 
     return kb
@@ -66,7 +83,15 @@ def change_data_kb():
 
 def send_admin_kb():
     kb = InlineKeyboardMarkup(row_width=3)
-    send = InlineKeyboardButton(text='Отправить администратору', url='https://t.me/activebee_tashkent')
+    send = InlineKeyboardButton(text='Перейти в чат', url='https://t.me/Ferrafa')
+
+    kb.add(send)
+    return kb
+
+
+def payme_kb():
+    kb = InlineKeyboardMarkup(row_width=1)
+    send = InlineKeyboardButton(text='Перейти к оплате', url='https://payme.uz/61824a6475752e8a58496324')
 
     kb.add(send)
     return kb
@@ -75,7 +100,7 @@ def send_admin_kb():
 def confirmation_kb():
     kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
     button = KeyboardButton('Подтвердить')
-    back = KeyboardButton('Назад◀️')
+    back = KeyboardButton('Назадд')
     kb.add(button, back)
 
     return kb
@@ -100,7 +125,7 @@ def phone_number_kb():
 
 def product_count():
     kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=3)
-    buttons = [KeyboardButton(i) for i in range(1, 5)]
+    buttons = [KeyboardButton(str(i)) for i in [50, 100, 200]]
     back = KeyboardButton('Назад◀️')
     kb.add(*buttons)
     kb.add(back)
@@ -134,43 +159,6 @@ def syrup_kb():
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
     button = KeyboardButton('Назад◀️')
     all_products = database.syrup_product()
-    #print(all_products)
-
-
-    buttons = [KeyboardButton(i[0]) for i in all_products]
-    kb.add(*buttons, button)
-
-    return kb
-
-
-def pastes_kb():
-    kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    button = KeyboardButton('Назад◀️')
-    all_products = database.pastes_product()
-    #print(all_products)
-
-
-    buttons = [KeyboardButton(i[0]) for i in all_products]
-    kb.add(*buttons, button)
-
-    return kb
-
-
-def other_pr_kb():
-    kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    button = KeyboardButton('Назад◀️')
-    all_products = database.other_product()
-
-    buttons = [KeyboardButton(i[0]) for i in all_products]
-    kb.add(*buttons, button)
-
-    return kb
-
-
-def polo_kb():
-    kb = ReplyKeyboardMarkup(resize_keyboard=True)
-    button = KeyboardButton('Назад◀️')
-    all_products = database.spray_product()
     #print(all_products)
 
 

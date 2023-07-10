@@ -12,9 +12,13 @@ class Add_product(StatesGroup):
 
 
 class GetProduct(StatesGroup):
-    getting_pr_name = State()
+    getting_pr_name180 = State()
+    getting_pr_name240 = State()
+    getting_pr_name300 = State()
     getting_pr_count = State()
-    getting_pr_colour = State()
+    getting_pr_colour180 = State()
+    getting_pr_colour240 = State()
+    getting_pr_colour300 = State()
 
 
 class Cart(StatesGroup):
