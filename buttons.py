@@ -24,6 +24,7 @@ def catalog_folder():
     kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     kb.add('Салфетки')
     kb.add('Плейсматы', 'Фартуки')
+    kb.add('Китель')
     kb.add('🛒Корзина', 'Назад🔙')
 
     return kb
@@ -36,6 +37,7 @@ def salfetki_kb():
     kb.add('Назад')
 
     return kb
+
 
 def cart_kb():
     kb = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
@@ -91,7 +93,7 @@ def send_admin_kb():
 
 def payme_kb():
     kb = InlineKeyboardMarkup(row_width=1)
-    send = InlineKeyboardButton(text='Перейти к оплате', url='https://payme.uz/61824a6475752e8a58496324')
+    send = InlineKeyboardButton(text='Перейти к оплате', url='https://payme.uz/64bbf9677044c9d1c4020f2c')
 
     kb.add(send)
     return kb

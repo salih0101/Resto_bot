@@ -1,5 +1,4 @@
 import asyncio
-
 from settings import *
 from about_company import about, contacts
 import csv
@@ -15,7 +14,7 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 @dp.message_handler(commands=['start'], state='*')
 async def start_message(message):
 
-    start_txt = f'Добро пожаловать   {message.from_user.first_name} !\n\n' \
+    start_txt = f'Добро пожаловать, {message.from_user.first_name} {message.from_user.last_name}!\n\n' \
                 f'Мы рады предложить вам широкий ассортимент высококачественных и стильных текстильных изделий, \n' \
                 f'которые сделают ваше заведение еще более привлекательным и профессиональным.'
 
@@ -24,7 +23,7 @@ async def start_message(message):
     user_id = message.from_user.id
     checker = database.check_user(user_id)
 
-    if user_id == 5928000362:
+    if user_id == 5928000362 or user_id == 394431835:
         await message.answer('Приветствую Администратор',
                              reply_markup=btns.admin_kb())
         await states.Admin.get_status.set()
@@ -423,8 +422,8 @@ async def cart_function(message, state=Cart.waiting_for_product):
         await message.answer('️❗️❗После оплаты нажмите в Телеграм боте на кнопку "Подтвердить"️❗️❗', reply_markup=btns.confirmation_kb())
         await asyncio.sleep(0.5)
         await message.answer('Подождите... Загружается')
-        await asyncio.sleep(1)
-        await bot.send_photo(chat_id=user_id, photo=open(photo_path, 'rb'), caption='Раздел оформления заказа🔽', reply_markup=btns.payme_kb())
+        await asyncio.sleep(0.5)
+        await bot.send_photo(chat_id=user_id, photo=open(photo_path, 'rb'), caption='Оплата на карту через Payme', reply_markup=btns.payme_kb())
 
     elif user_answer == 'Подтвердить':
 
@@ -439,13 +438,15 @@ async def cart_function(message, state=Cart.waiting_for_product):
 
             for item in user_cart:
                 result_answer += f'- {item[1]}: {item[5]} {item[-2]} шт = {item[3]:,.0f}сум\n\n'.replace(",", ".")
+                admin_message += f'- {item[1]}: {item[4]} шт = {item[3]:}сум\n\n'
                 total_price += item[3]
 
             formatted_price = f"{total_price:,.0f}".replace(",", ".")
             result_answer += f'\nИтог: {formatted_price}сум\n\n'
-            admin_message += f' Номер телефона: {item[2]}\n\nИтог: {formatted_price:}сум\n\n'
+            # admin_message += f'Номер телефона: {item[2]}:\n\nКоличество {item[-2]}шт\n\nИтог: {formatted_price:}сум\n\n'
+            admin_message += f'Номер телефона: {item[2]}\n\nИтог: {formatted_price:}сум\n\n'
 
-            delivery_date = datetime.now() + timedelta(days=21)
+            delivery_date = datetime.now() + timedelta(days=14)
             delivery_date1 = datetime.now() + timedelta(days=7)
 
             result_answer += f'❗️ Дата доставки(Фартук): {delivery_date.strftime("%d.%m.%Y")}\n\n'
@@ -457,7 +458,8 @@ async def cart_function(message, state=Cart.waiting_for_product):
             await message.answer(result_answer, reply_markup=btns.main_menu())
             await message.answer('Успешно оформлен✅\n\n')
             await state.finish()
-            await bot.send_message(5928000362, admin_message)
+            await bot.send_message(394431835, admin_message)
+            # await bot.send_message(5928000362, admin_message)
 
             database.delete_from_cart(user_id)
 
@@ -466,6 +468,9 @@ async def cart_function(message, state=Cart.waiting_for_product):
 async def main_menu(message):
     user_answer = message.text
     user_id = message.from_user.id
+    photo_path1 = 'Photo/fartuk.jpg'
+    photo_path2 = 'Photo/kitel.jpg'
+    photo_path3 = 'Photo/pleys.jpg'
 
     if user_answer == '🛒Корзина':
         user_cart = database.get_user_cart(user_id)
@@ -516,14 +521,29 @@ async def main_menu(message):
         await message.answer('Выберите продукт🔽', reply_markup=btns.syrup_kb())
         await states.GetProduct.getting_pr_name300.set()
 
+
     elif user_answer == 'Плейсматы':
-        await message.answer('Инфо текст дя плейсматов...\n\n\n'
-                             'для заказа нажмите кнопку ниже', reply_markup=btns.send_admin_kb())
+        await bot.send_photo(chat_id=user_id,
+                             photo=open(photo_path3, 'rb'),
+                             caption='Плейсмат будет сочетаться с любым стилем сервировки стола. Строгий стиль будет смотреться отлично с любым интерьером.\n'
+                             'Способствует предотвращением пятен на столе\n'
+                             'Чтобы получить подробную информацию\n'
+                             'Нажмите кнопку ниже', reply_markup=btns.send_admin_kb())
 
     elif user_answer == 'Фартуки':
-        await message.answer('Инфо текст для фартука... \n\n\n'
-                             'для заказа нажмите кнопку ниже', reply_markup=btns.send_admin_kb())
+        await bot.send_photo(chat_id=user_id,
+                             photo=open(photo_path1, 'rb'),
+                             caption='Мы можем выбрать любой цвет ткани, элементов отделки и фурнитуры. Возможна разработка уникальных лекало профессиональным дизайнером-конструктором по фотографиям или образцам заказчика а также предлагаем нанесение логотипов на униформу который сделает её более яркой формируя запоминающий образ глазах посетителей вашего заведения'
+                             'Чтобы получить подробную информацию\n'
+                             'Нажмите кнопку ниже', reply_markup=btns.send_admin_kb())
 
+
+    elif user_answer == 'Китель':
+        await bot.send_photo(chat_id=user_id,
+                             photo=open(photo_path2, 'rb'),
+                             caption='Мы можем выбрать любой цвет ткани, элементов отделки и фурнитуры. Возможна разработка уникальных лекало профессиональным дизайнером-конструктором по фотографиям или образцам заказчика а также предлагаем нанесение логотипов на униформу который сделает её более яркой формируя запоминающий образ глазах посетителей вашего заведения'
+                             'Чтобы получить подробную информацию\n'
+                             'Нажмите кнопку ниже', reply_markup=btns.send_admin_kb())
 
     elif user_answer == 'Назад◀️':
         await message.answer('Выберите категорию🔽', reply_markup=btns.catalog_folder())
